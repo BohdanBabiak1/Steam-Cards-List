@@ -195,27 +195,38 @@ function createList(cardsSortByGames) {
 
 function createListElement(gameId, cards) {
     let newElement = document.createElement('li');
-        newElement.classList.add('list_element');
+    newElement.classList.add('list_element');
 
-        let totalPrice = cards.reduce((sum, card) => sum + card.sell_price, 0) / 100;
+    let totalPrice = cards.reduce((sum, card) => sum + card.sell_price, 0) / 100;
 
-        newElement.innerHTML = `
-            <div class="cards_preview">
-                <div class="card_list">
-                    ${cards.slice(0, 5).map(card => `
-                        <div class="card_wrap">
-                            <img src="https://community.fastly.steamstatic.com/economy/image/${card.asset_description.icon_url}/62fx62f">
-                        </div>
-                    `).join('')}
-                </div>
-                <a class="name_of_game" href="https://steamcommunity.com/market/search?q=&category_753_Event[]=any&category_753_Game[]=tag_app_${gameId}&category_753_cardborder[]=tag_cardborder_0&category_753_item_class[]=tag_item_class_2&appid=753" target="_blank">${cards[0].asset_description.type.split(' — ')[0]}</a>
+    newElement.innerHTML = `
+        <div class="cards_preview">
+            <div class="card_list">
+                ${cards.slice(0, 5).map(card => `
+                    <div class="card_wrap">
+                        <img src="https://community.fastly.steamstatic.com/economy/image/${card.asset_description.icon_url}/62fx62f">
+                    </div>
+                `).join('')}
             </div>
-            <div class="number_of_cards">${cards.length}</div>
-            <div class="cards_price">${totalPrice.toFixed(2)}$</div>
-            <input type="button" class="buy_btn" value="Buy">
-        `;
+            <a class="name_of_game" href="https://steamcommunity.com/market/search?q=&category_753_Event[]=any&category_753_Game[]=tag_app_${gameId}&category_753_cardborder[]=tag_cardborder_0&category_753_item_class[]=tag_item_class_2&appid=753" target="_blank">${cards[0].asset_description.type.split(' — ')[0]}</a>
+        </div>
+        <div class="number_of_cards">${cards.length}</div>
+        <div class="cards_price">${totalPrice.toFixed(2)}$</div>
+        <input type="button" class="buy_btn" value="Buy">
+    `;
 
-        elementsList.appendChild(newElement);
+    elementsList.appendChild(newElement);
+
+    let urlParameters = ""
+    for (let ii = 0; ii < cards.length; ii++){
+        urlParameters += `&items[]=${cards[ii].hash_name}&qty[]=1`
+    }
+    const buyButton = newElement.querySelector('.buy_btn');
+    buyButton.addEventListener('click', () => {
+        const marketUrl = `https://steamcommunity.com/market/multibuy?appid=753${urlParameters}`;
+        window.open(marketUrl, '_blank');
+    });
 }
+
 
 loadItems()
