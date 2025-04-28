@@ -4,7 +4,7 @@ const baseURL = 'https://steamcommunity.com/market/search/render/?query=&count=1
 const proxyPrefix = 'https://corsproxy.io/?';
 // const proxyPrefix = 'http://localhost:3000/proxy?url=';
 
-let allItems = [];
+// let allItems = [];
 let groupedByGamesItems = [];
 
 let startItem = 8100;
@@ -35,67 +35,60 @@ const currentTime = Date.now();
 //     }
 // }
 
-allItems
+fetch('https://bohdanbabiak1.github.io/Steam-Cards-List/steam_cards.json')
+    .then(response => response.text())
+    .then(text => {
+        const allItems = JSON.parse(text);
+        console.log(allItems)
+        findCardsByGame(allItems)
+        createList(groupedByGamesItems)
+    })
+    .catch(error => {
+        console.error("Помилка при завантаженні:", error);
+    });
 
-fetch('./steam_cards_unique.json')
-  .then(response => response.json())
-  .then(data => {
-    allItems = data
-});
+function findCardsByGame(allItems) {
+    allItems.forEach(card => {
+        const gameId = card.hash_name.split('-')[0];
 
-// console.log(allItems)
-findCardsByGame()
-createList(groupedByGamesItems)
+        if (!groupedByGamesItems[gameId]) {
+            groupedByGamesItems[gameId] = [];
+        }
 
-function createList(items){
-    items.forEach(group => {
+        groupedByGamesItems[gameId].push(card);
+    });
+
+    console.log("Кількість ігор:", Object.keys(groupedByGamesItems).length);
+}
+
+function createList(cardsSortByGames) {
+    for (const [gameId, cards] of Object.entries(cardsSortByGames)) {
         let newElement = document.createElement('li');
         newElement.classList.add('list_element');
-    
-        let totalPrice = 0;
-        group.forEach(card => {
-            totalPrice += card.sell_price;
-        });
-        totalPrice = totalPrice / 100;
-    
+
+        let totalPrice = cards.reduce((sum, card) => sum + card.sell_price, 0) / 100;
+
         newElement.innerHTML = `
             <div class="cards_preview">
                 <div class="card_list">
-                    ${group.slice(0, 5).map(card => `
+                    ${cards.slice(0, 5).map(card => `
                         <div class="card_wrap">
                             <img src="https://community.fastly.steamstatic.com/economy/image/${card.asset_description.icon_url}/62fx62f">
                         </div>
                     `).join('')}
                 </div>
-                <div class="name_of_game">${group[0].asset_description.type.split(' — ')[0]}</div>
+                <div class="name_of_game">${cards[0].asset_description.type.split(' — ')[0]}</div>
             </div>
-            <div class="number_of_cards">${group.length}</div>
+            <div class="number_of_cards">${cards.length}</div>
             <div class="cards_price">${totalPrice.toFixed(2)}$</div>
             <input type="button" class="buy_btn" value="Buy">
         `;
-    
+
         elementsList.appendChild(newElement);
-    });
+    }
 }
 
-function findCardsByGame() {
-    groupedByGamesItems = [];
 
-    allItems.forEach(item => {
-        const gameId = item.hash_name.split('-')[0];
-
-        let gameGroup = groupedByGamesItems.find(group => group[0].hash_name.split('-')[0] === gameId);
-
-        if (!gameGroup) {
-            gameGroup = [];
-            groupedByGamesItems.push(gameGroup)
-        }
-
-        gameGroup.push(item);
-    });
-
-    console.log(groupedByGamesItems);
-}
 
 function findPriceBoundary() {
     const url = proxyPrefix + encodeURIComponent(baseURL + `&start=${startItem}`);

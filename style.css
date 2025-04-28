@@ -185,15 +185,18 @@ body{
   pointer-events: none;
 }
 
-.name_of_game{
+.name_of_game {
   font-size: 18px;
   font-weight: 500;
   cursor: pointer;
+  color: white;
+  text-decoration: none;
 }
 
-.name_of_game:hover{
+.name_of_game:hover {
   text-decoration: underline;
 }
+
 
 .number_of_cards{
   font-size: 16px;
