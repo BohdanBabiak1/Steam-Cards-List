@@ -1,4 +1,5 @@
 const elementsList = document.querySelector(".list")
+let acceptLanguage = navigator.languages ? navigator.languages.join(",") : navigator.language;
 
 const proxyPrefix = 'https://corsproxy.io/?'
 const base_url = "https://steamcommunity.com/market/search/render/";
@@ -14,10 +15,11 @@ const params = {
     "category_753_Game[]": "any",
     "category_753_item_class[]": "tag_item_class_2",
     "category_753_cardborder[]": "tag_cardborder_0",
-    norender: 1
+    norender: 1,
 };
 
 let loadItemsCount = 100
+let loadGamesCount = 10;
 
 let startItem = 8100
 let lastStartSavedItem = localStorage.getItem('StartNumberItem')
@@ -32,6 +34,7 @@ let uniqueGameIds = new Set();
 
 let allGameCards = {};
 let i = 0
+let loadedGames = loadGamesCount;
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -46,7 +49,7 @@ async function loadItems() {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
             }
         })
 
@@ -119,9 +122,29 @@ async function loadItems() {
 async function findGamesCards() {
     let uniqueGameIdsArray = Array.from(uniqueGameIds)
 
-    if (i >= uniqueGameIdsArray.length || i >= 20){
+    if (i >= uniqueGameIdsArray.length || i >= loadedGames){
+        if (i + loadGamesCount >= uniqueGameIdsArray.length){
+            console.log(1)
+        }
+
         console.log(allGameCards);
-        // createList(allGameCards)
+        
+        let loadMoreButton = document.createElement('div');
+        loadMoreButton.classList.add('load_btn_wrapper');
+        loadMoreButton.classList.add('item');
+        loadMoreButton.innerHTML = `
+            <input type="button" class="load_btn" value="Load More">
+        `
+        const loadButton = loadMoreButton.querySelector('.load_btn');
+        loadButton.addEventListener('click', () => {
+            loadMoreButton.remove()
+            loadedGames += loadGamesCount
+            findGamesCards();
+            return;
+        });
+
+        elementsList.appendChild(loadMoreButton);
+
         return
     }
 
@@ -133,7 +156,7 @@ async function findGamesCards() {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
             }
         })
 
@@ -166,47 +189,23 @@ async function findGamesCards() {
     }
 }
 
-function createList(cardsSortByGames) {
-    for (const [gameId, cards] of Object.entries(cardsSortByGames)) {
-        let newElement = document.createElement('li');
-        newElement.classList.add('list_element');
-
-        let totalPrice = cards.reduce((sum, card) => sum + card.sell_price, 0) / 100;
-
-        newElement.innerHTML = `
-            <div class="cards_preview">
-                <div class="card_list">
-                    ${cards.slice(0, 5).map(card => `
-                        <div class="card_wrap">
-                            <img src="https://community.fastly.steamstatic.com/economy/image/${card.asset_description.icon_url}/62fx62f">
-                        </div>
-                    `).join('')}
-                </div>
-                <a class="name_of_game" href="https://steamcommunity.com/market/search?q=&category_753_Event[]=any&category_753_Game[]=tag_app_${gameId}&category_753_cardborder[]=tag_cardborder_0&category_753_item_class[]=tag_item_class_2&appid=753" target="_blank">${cards[0].asset_description.type.split(' — ')[0]}</a>
-            </div>
-            <div class="number_of_cards">${cards.length}</div>
-            <div class="cards_price">${totalPrice.toFixed(2)}$</div>
-            <input type="button" class="buy_btn" value="Buy">
-        `;
-
-        elementsList.appendChild(newElement);
-    }
-}
-
 function createListElement(gameId, cards) {
     let newElement = document.createElement('li');
     newElement.classList.add('list_element');
+    newElement.classList.add('item');
 
     let totalPrice = cards.reduce((sum, card) => sum + card.sell_price, 0) / 100;
 
     newElement.innerHTML = `
         <div class="cards_preview">
             <div class="card_list">
-                ${cards.slice(0, 5).map(card => `
-                    <div class="card_wrap">
-                        <img src="https://community.fastly.steamstatic.com/economy/image/${card.asset_description.icon_url}/62fx62f">
-                    </div>
-                `).join('')}
+                <div class="swiper-wrapper">
+                    ${cards.slice(0, 20).map(card => `
+                        <div class="swiper-slide">
+                            <a href="https://steamcommunity.com/market/listings/753/${card.hash_name.replace('&', '%26')}" target="_blank"><img src="https://community.fastly.steamstatic.com/economy/image/${card.asset_description.icon_url}/62fx62f2x2x"></a>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
             <a class="name_of_game" href="https://steamcommunity.com/market/search?q=&category_753_Event[]=any&category_753_Game[]=tag_app_${gameId}&category_753_cardborder[]=tag_cardborder_0&category_753_item_class[]=tag_item_class_2&appid=753" target="_blank">${cards[0].asset_description.type.split(' — ')[0]}</a>
         </div>
@@ -219,14 +218,24 @@ function createListElement(gameId, cards) {
 
     let urlParameters = ""
     for (let ii = 0; ii < cards.length; ii++){
-        urlParameters += `&items[]=${cards[ii].hash_name}&qty[]=1`
+        urlParameters += `&items[]=${cards[ii].hash_name.replace('&', '%26')}&qty[]=1`
     }
     const buyButton = newElement.querySelector('.buy_btn');
     buyButton.addEventListener('click', () => {
         const marketUrl = `https://steamcommunity.com/market/multibuy?appid=753${urlParameters}`;
         window.open(marketUrl, '_blank');
     });
-}
 
+    var swiper = new Swiper(".card_list", {
+        effect: "cards",
+        cardsEffect: {
+            slideShadows: false,
+            perSlideOffset: 8,
+            perSlideRotate: 5,
+          },
+        grabCursor: true,
+        mousewheel: true,
+      });
+}
 
 loadItems()

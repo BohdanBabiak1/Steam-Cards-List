@@ -25,7 +25,7 @@
   /* 6. Improve media defaults */
   img, picture, video, canvas, svg {
     display: block;
-    max-width: 100%;
+    max-height: 100%;
   }
   
   /* 7. Inherit fonts for form controls */
@@ -85,16 +85,42 @@ body{
 }
 
 .main{
-  margin-top: 55px;
-    position: absolute;
-    height: 100%;
-    width: 90%;
+  top: 55px;
+  position: absolute;
+  position: relative; 
+  height: calc(55px - 100%);
+  width: 90%;
+  max-width: 1100px;
 }
+
+.loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-block;
+  border-top: 3px solid #d3d3d3;
+  border-right: 3px solid transparent;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 
 
 .sort{
   display: flex;
   margin-top: 17px;
-  padding: 0 20px 0 20px;
+  padding: 0 20px 0 22px;
   width: 100%;
   height: 54px;
   background-color: #0e141b;
@@ -122,7 +148,7 @@ body{
 }
 
 .game_name{
-  width: calc(130px + clamp(120px, 20vw, 300px) + clamp(10px, 5vw, 20px));
+  width: calc(53px + clamp(120px, 20vw, 300px) + clamp(10px, 5vw, 20px));
   text-align: center;
 }
 
@@ -140,7 +166,7 @@ body{
   border-radius: 5px;
   display: flex;
   align-items: center;
-  padding-left: 18px;
+  padding-left: 22px;
   padding-right: 20px;
   justify-content: space-between;
   color: white;
@@ -154,33 +180,26 @@ body{
 }
 
 .card_list {
-  display: flex;
-  width: 130px;
-}
-
-.card_wrap {
-  width: 25px;
-  margin-right: -7px;
+  width: 59px;
+  height: 62px;
   transition: all 0.2s ease;
-  position: relative;
+}
+
+.card_list:hover{
+  transform: scale(1.3);
+}
+
+.swiper-slide{
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  object-fit: cover;
 }
 
-.card_wrap:last-child{
-  width: 55px;
-}
-
-.card_wrap:hover {
-  transform: translateY(-10px) scale(1.25);
-  z-index: 10;
-}
-
-.card_wrap img {
-  width: auto;
-  height: auto;
-  max-width: none;
-  max-height: none;
+.card_wrap a img {
+  width: 62px;
+  height: 62px;
+  max-height: 100%;
   object-fit: none;
   pointer-events: none;
 }
@@ -196,7 +215,6 @@ body{
 .name_of_game:hover {
   text-decoration: underline;
 }
-
 
 .number_of_cards{
   font-size: 16px;
@@ -234,4 +252,41 @@ body{
 .cards_price{
   width: 46px;
   text-align: center;
+}
+
+.load_btn_wrapper{
+  display: flex;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.load_btn{
+  font-family: "Arimo", sans-serif;
+  font-size: 16px;
+  border: none;
+  border-radius: 3px;
+  height: 44px;
+  width: 130px;
+  color: #76808C;
+  background-color: #0e141b;
+  transition: all 0.1s ease;
+}
+
+.load_btn:hover{
+  background-color: #aad257;
+  color: black;
+}
+
+.load_btn:active{
+  background-color: #b5da66;
+  transform: translateY(1.5px)
+}
+
+.load_btn:disabled{
+  color: #76808C;
+  background-color: #2a2c2e;
+}
+
+.list .item:last-child{
+  margin-bottom: 30px;
 }
